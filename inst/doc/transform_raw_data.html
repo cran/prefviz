@@ -1,0 +1,700 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+
+<meta charset="utf-8" />
+<meta name="generator" content="pandoc" />
+<meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
+
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+
+
+
+<title>Transforming voting data to ternable-friendly format</title>
+
+<script>// Pandoc 2.9 adds attributes on both header and div. We remove the former (to
+// be compatible with the behavior of Pandoc < 2.8).
+document.addEventListener('DOMContentLoaded', function(e) {
+  var hs = document.querySelectorAll("div.section[class*='level'] > :first-child");
+  var i, h, a;
+  for (i = 0; i < hs.length; i++) {
+    h = hs[i];
+    if (!/^h[1-6]$/i.test(h.tagName)) continue;  // it should be a header h1-h6
+    a = h.attributes;
+    while (a.length > 0) h.removeAttribute(a[0].name);
+  }
+});
+</script>
+
+<style type="text/css">
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+span.underline{text-decoration: underline;}
+div.column{display: inline-block; vertical-align: top; width: 50%;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+</style>
+
+
+
+<style type="text/css">
+code {
+white-space: pre;
+}
+.sourceCode {
+overflow: visible;
+}
+</style>
+<style type="text/css" data-origin="pandoc">
+html { -webkit-text-size-adjust: 100%; }
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+{ counter-reset: source-line 0; }
+pre.numberSource code > span
+{ position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+{ content: counter(source-line);
+position: relative; left: -1em; text-align: right; vertical-align: baseline;
+border: none; display: inline-block;
+-webkit-touch-callout: none; -webkit-user-select: none;
+-khtml-user-select: none; -moz-user-select: none;
+-ms-user-select: none; user-select: none;
+padding: 0 4px; width: 4em;
+color: #aaaaaa;
+}
+pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa; padding-left: 4px; }
+div.sourceCode
+{ }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+code span.al { color: #ff0000; font-weight: bold; } 
+code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } 
+code span.at { color: #7d9029; } 
+code span.bn { color: #40a070; } 
+code span.bu { color: #008000; } 
+code span.cf { color: #007020; font-weight: bold; } 
+code span.ch { color: #4070a0; } 
+code span.cn { color: #880000; } 
+code span.co { color: #60a0b0; font-style: italic; } 
+code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } 
+code span.do { color: #ba2121; font-style: italic; } 
+code span.dt { color: #902000; } 
+code span.dv { color: #40a070; } 
+code span.er { color: #ff0000; font-weight: bold; } 
+code span.ex { } 
+code span.fl { color: #40a070; } 
+code span.fu { color: #06287e; } 
+code span.im { color: #008000; font-weight: bold; } 
+code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } 
+code span.kw { color: #007020; font-weight: bold; } 
+code span.op { color: #666666; } 
+code span.ot { color: #007020; } 
+code span.pp { color: #bc7a00; } 
+code span.sc { color: #4070a0; } 
+code span.ss { color: #bb6688; } 
+code span.st { color: #4070a0; } 
+code span.va { color: #19177c; } 
+code span.vs { color: #4070a0; } 
+code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } 
+</style>
+<script>
+// apply pandoc div.sourceCode style to pre.sourceCode instead
+(function() {
+  var sheets = document.styleSheets;
+  for (var i = 0; i < sheets.length; i++) {
+    if (sheets[i].ownerNode.dataset["origin"] !== "pandoc") continue;
+    try { var rules = sheets[i].cssRules; } catch (e) { continue; }
+    var j = 0;
+    while (j < rules.length) {
+      var rule = rules[j];
+      // check if there is a div.sourceCode rule
+      if (rule.type !== rule.STYLE_RULE || rule.selectorText !== "div.sourceCode") {
+        j++;
+        continue;
+      }
+      var style = rule.style.cssText;
+      // check if color or background-color is set
+      if (rule.style.color === '' && rule.style.backgroundColor === '') {
+        j++;
+        continue;
+      }
+      // replace div.sourceCode by a pre.sourceCode rule
+      sheets[i].deleteRule(j);
+      sheets[i].insertRule('pre.sourceCode{' + style + '}', j);
+    }
+  }
+})();
+</script>
+
+
+
+
+<style type="text/css">body {
+background-color: #fff;
+margin: 1em auto;
+max-width: 700px;
+overflow: visible;
+padding-left: 2em;
+padding-right: 2em;
+font-family: "Open Sans", "Helvetica Neue", Helvetica, Arial, sans-serif;
+font-size: 14px;
+line-height: 1.35;
+}
+#TOC {
+clear: both;
+margin: 0 0 10px 10px;
+padding: 4px;
+width: 400px;
+border: 1px solid #CCCCCC;
+border-radius: 5px;
+background-color: #f6f6f6;
+font-size: 13px;
+line-height: 1.3;
+}
+#TOC .toctitle {
+font-weight: bold;
+font-size: 15px;
+margin-left: 5px;
+}
+#TOC ul {
+padding-left: 40px;
+margin-left: -1.5em;
+margin-top: 5px;
+margin-bottom: 5px;
+}
+#TOC ul ul {
+margin-left: -2em;
+}
+#TOC li {
+line-height: 16px;
+}
+table {
+margin: 1em auto;
+border-width: 1px;
+border-color: #DDDDDD;
+border-style: outset;
+border-collapse: collapse;
+}
+table th {
+border-width: 2px;
+padding: 5px;
+border-style: inset;
+}
+table td {
+border-width: 1px;
+border-style: inset;
+line-height: 18px;
+padding: 5px 5px;
+}
+table, table th, table td {
+border-left-style: none;
+border-right-style: none;
+}
+table thead, table tr.even {
+background-color: #f7f7f7;
+}
+p {
+margin: 0.5em 0;
+}
+blockquote {
+background-color: #f6f6f6;
+padding: 0.25em 0.75em;
+}
+hr {
+border-style: solid;
+border: none;
+border-top: 1px solid #777;
+margin: 28px 0;
+}
+dl {
+margin-left: 0;
+}
+dl dd {
+margin-bottom: 13px;
+margin-left: 13px;
+}
+dl dt {
+font-weight: bold;
+}
+ul {
+margin-top: 0;
+}
+ul li {
+list-style: circle outside;
+}
+ul ul {
+margin-bottom: 0;
+}
+pre, code {
+background-color: #f7f7f7;
+border-radius: 3px;
+color: #333;
+white-space: pre-wrap; 
+}
+pre {
+border-radius: 3px;
+margin: 5px 0px 10px 0px;
+padding: 10px;
+}
+pre:not([class]) {
+background-color: #f7f7f7;
+}
+code {
+font-family: Consolas, Monaco, 'Courier New', monospace;
+font-size: 85%;
+}
+p > code, li > code {
+padding: 2px 0px;
+}
+div.figure {
+text-align: center;
+}
+img {
+background-color: #FFFFFF;
+padding: 2px;
+border: 1px solid #DDDDDD;
+border-radius: 3px;
+border: 1px solid #CCCCCC;
+margin: 0 5px;
+}
+h1 {
+margin-top: 0;
+font-size: 35px;
+line-height: 40px;
+}
+h2 {
+border-bottom: 4px solid #f7f7f7;
+padding-top: 10px;
+padding-bottom: 2px;
+font-size: 145%;
+}
+h3 {
+border-bottom: 2px solid #f7f7f7;
+padding-top: 10px;
+font-size: 120%;
+}
+h4 {
+border-bottom: 1px solid #f7f7f7;
+margin-left: 8px;
+font-size: 105%;
+}
+h5, h6 {
+border-bottom: 1px solid #ccc;
+font-size: 105%;
+}
+a {
+color: #0033dd;
+text-decoration: none;
+}
+a:hover {
+color: #6666ff; }
+a:visited {
+color: #800080; }
+a:visited:hover {
+color: #BB00BB; }
+a[href^="http:"] {
+text-decoration: underline; }
+a[href^="https:"] {
+text-decoration: underline; }
+
+code > span.kw { color: #555; font-weight: bold; } 
+code > span.dt { color: #902000; } 
+code > span.dv { color: #40a070; } 
+code > span.bn { color: #d14; } 
+code > span.fl { color: #d14; } 
+code > span.ch { color: #d14; } 
+code > span.st { color: #d14; } 
+code > span.co { color: #888888; font-style: italic; } 
+code > span.ot { color: #007020; } 
+code > span.al { color: #ff0000; font-weight: bold; } 
+code > span.fu { color: #900; font-weight: bold; } 
+code > span.er { color: #a61717; background-color: #e3d2d2; } 
+</style>
+
+
+
+
+</head>
+
+<body>
+
+
+
+
+<h1 class="title toc-ignore">Transforming voting data to
+ternable-friendly format</h1>
+
+
+
+<div id="introduction" class="section level1">
+<h1>Introduction</h1>
+<p>Raw voting data comes in all shapes and forms, and not all voting
+data can be easily transformed into a format that is ready for ternary
+plots.</p>
+<p>This vignette shows how to transform common voting data formats into
+a <code>ternable</code>-friendly format that can be used for ternary
+plots. These include PrefLib-formatted data, raw ballot data in long and
+wide forms, and AEC distribution of preference data.</p>
+</div>
+<div id="ternable-friendly-data" class="section level1">
+<h1><code>ternable</code>-friendly data</h1>
+<p><code>as_ternable()</code> creates a <code>ternable</code> object,
+which is a S3 object that contains the data and metadata necessary for
+ternary plots.</p>
+<p>A <code>ternable</code>-friendly data frame must have the following
+characteristics:</p>
+<ul>
+<li>At least 3 numeric columns representing the preferences for 3
+items/candidates of the election. These columns will act as the vertices
+of the ternary plot.</li>
+<li>Values in these item/candidate columns must be non-negative, and sum
+to 1.</li>
+</ul>
+<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" tabindex="-1"></a>df <span class="ot">&lt;-</span> <span class="fu">tibble</span>(</span>
+<span id="cb1-2"><a href="#cb1-2" tabindex="-1"></a>  <span class="at">electorate =</span> <span class="fu">c</span>(<span class="st">&quot;A&quot;</span>, <span class="st">&quot;B&quot;</span>, <span class="st">&quot;C&quot;</span>),</span>
+<span id="cb1-3"><a href="#cb1-3" tabindex="-1"></a>  <span class="at">PartyA =</span> <span class="fu">c</span>(<span class="fl">0.5</span>, <span class="fl">0.4</span>, <span class="fl">0.6</span>),</span>
+<span id="cb1-4"><a href="#cb1-4" tabindex="-1"></a>  <span class="at">PartyB =</span> <span class="fu">c</span>(<span class="fl">0.3</span>, <span class="fl">0.4</span>, <span class="fl">0.2</span>),</span>
+<span id="cb1-5"><a href="#cb1-5" tabindex="-1"></a>  <span class="at">PartyC =</span> <span class="fu">c</span>(<span class="fl">0.2</span>, <span class="fl">0.2</span>, <span class="fl">0.2</span>)</span>
+<span id="cb1-6"><a href="#cb1-6" tabindex="-1"></a>)</span>
+<span id="cb1-7"><a href="#cb1-7" tabindex="-1"></a></span>
+<span id="cb1-8"><a href="#cb1-8" tabindex="-1"></a>df</span>
+<span id="cb1-9"><a href="#cb1-9" tabindex="-1"></a><span class="co">#&gt; # A tibble: 3 × 4</span></span>
+<span id="cb1-10"><a href="#cb1-10" tabindex="-1"></a><span class="co">#&gt;   electorate PartyA PartyB PartyC</span></span>
+<span id="cb1-11"><a href="#cb1-11" tabindex="-1"></a><span class="co">#&gt;   &lt;chr&gt;       &lt;dbl&gt;  &lt;dbl&gt;  &lt;dbl&gt;</span></span>
+<span id="cb1-12"><a href="#cb1-12" tabindex="-1"></a><span class="co">#&gt; 1 A             0.5    0.3    0.2</span></span>
+<span id="cb1-13"><a href="#cb1-13" tabindex="-1"></a><span class="co">#&gt; 2 B             0.4    0.4    0.2</span></span>
+<span id="cb1-14"><a href="#cb1-14" tabindex="-1"></a><span class="co">#&gt; 3 C             0.6    0.2    0.2</span></span></code></pre></div>
+<p>The above data frame is a minimal example of a
+<code>ternable</code>-friendly data frame. It contains 3 columns, each
+representing the preferences for a party in a specific electorate. The
+values in these columns are all non-negative and sum to 1.</p>
+</div>
+<div id="preflib-formatted-data" class="section level1">
+<h1>PrefLib-formatted data</h1>
+<p><a href="https://preflib.github.io/PrefLib-Jekyll/format">PrefLib
+format</a> is a common format for storing preferential data, and can be
+easily downloaded using <code>prefio::read_preflib()</code>
+function.</p>
+<p>In this example, we will use the <a href="https://preflib.github.io/PrefLib-Jekyll/dataset/00058">NSW
+Legislative Assembly Election dataset</a>.</p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" tabindex="-1"></a>nswla <span class="ot">&lt;-</span> <span class="fu">read_preflib</span>(<span class="st">&quot;00058 - nswla/00058-00000171.soi&quot;</span>, <span class="at">from_preflib =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb2-2"><a href="#cb2-2" tabindex="-1"></a>nswla</span>
+<span id="cb2-3"><a href="#cb2-3" tabindex="-1"></a><span class="co">#&gt; # A tibble: 1,104 × 2</span></span>
+<span id="cb2-4"><a href="#cb2-4" tabindex="-1"></a><span class="co">#&gt; # ℹ 1,094 more rows</span></span>
+<span id="cb2-5"><a href="#cb2-5" tabindex="-1"></a><span class="co">#&gt; # ℹ 2 more variables: preferences &lt;prefrncs&gt;, frequency &lt;int&gt;</span></span></code></pre></div>
+<p>The dataset contains preferential data, with each row representing a
+unique set of preferences and their respective frequencies. What is
+missing to transform this data into a <code>ternable</code>-friendly
+format is the breakdown of preferences for each candidate in each round
+of voting.</p>
+<p>The function <code>dop_irv()</code> in this package helps us simulate
+the Instant Runoff Voting (IRV) process to get the round-by-round
+preferences for each candidate, and then transform the data into a
+<code>ternable</code>-friendly format. A caveat for this function is
+that it does not handle ties in preferences given a ballot, which works
+fine under Australian IRV rules, but may not be appropriate for other
+electoral systems.</p>
+<div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" tabindex="-1"></a><span class="fu">dop_irv</span>(</span>
+<span id="cb3-2"><a href="#cb3-2" tabindex="-1"></a>  nswla, <span class="at">value_type =</span> <span class="st">&quot;percentage&quot;</span>,</span>
+<span id="cb3-3"><a href="#cb3-3" tabindex="-1"></a>  <span class="at">preferences_col =</span> preferences,</span>
+<span id="cb3-4"><a href="#cb3-4" tabindex="-1"></a>  <span class="at">frequency_col =</span> frequency)</span>
+<span id="cb3-5"><a href="#cb3-5" tabindex="-1"></a><span class="co">#&gt; # A tibble: 4 × 8</span></span>
+<span id="cb3-6"><a href="#cb3-6" tabindex="-1"></a><span class="co">#&gt;   round `HAYLEN Jo` `WEI Leo` `RAUE Tom` `MAKRIS Andrea` `ROMANOVSKY Teresa`</span></span>
+<span id="cb3-7"><a href="#cb3-7" tabindex="-1"></a><span class="co">#&gt;   &lt;int&gt;       &lt;dbl&gt;     &lt;dbl&gt;      &lt;dbl&gt;           &lt;dbl&gt;               &lt;dbl&gt;</span></span>
+<span id="cb3-8"><a href="#cb3-8" tabindex="-1"></a><span class="co">#&gt; 1     1       0.464     0.233      0.206          0.0572              0.0252</span></span>
+<span id="cb3-9"><a href="#cb3-9" tabindex="-1"></a><span class="co">#&gt; 2     2       0.469     0.236      0.209          0.0595              0.0270</span></span>
+<span id="cb3-10"><a href="#cb3-10" tabindex="-1"></a><span class="co">#&gt; 3     3       0.478     0.240      0.218          0.0646              0     </span></span>
+<span id="cb3-11"><a href="#cb3-11" tabindex="-1"></a><span class="co">#&gt; 4     4       0.504     0.253      0.244          0                   0     </span></span>
+<span id="cb3-12"><a href="#cb3-12" tabindex="-1"></a><span class="co">#&gt; # ℹ 2 more variables: `SINDEN Dale` &lt;dbl&gt;, winner &lt;chr&gt;</span></span></code></pre></div>
+</div>
+<div id="raw-ballot-data-in-long-and-wide-formats" class="section level1">
+<h1>Raw ballot data in long and wide formats</h1>
+<p>Raw ballot data mostly comes in long or wide format. Both formats can
+be transformed into Preflib format, which can then be converted to
+<code>ternable</code>-friendly format using <code>dop_irv()</code>.</p>
+<p><strong>Processing long format</strong></p>
+<p>Consider the following example of simulated ballot data in long
+format for the Melbourne electorate, with 3 parties: ALP, LNP, and
+Other, and a typical column for preference rank.</p>
+<table>
+<thead>
+<tr class="header">
+<th align="right">ballot_id</th>
+<th align="left">elect_division</th>
+<th align="left">party</th>
+<th align="right">preference_rank</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="right">1</td>
+<td align="left">Melbourne</td>
+<td align="left">ALP</td>
+<td align="right">1</td>
+</tr>
+<tr class="even">
+<td align="right">1</td>
+<td align="left">Melbourne</td>
+<td align="left">LNP</td>
+<td align="right">2</td>
+</tr>
+<tr class="odd">
+<td align="right">1</td>
+<td align="left">Melbourne</td>
+<td align="left">Other</td>
+<td align="right">3</td>
+</tr>
+<tr class="even">
+<td align="right">2</td>
+<td align="left">Melbourne</td>
+<td align="left">ALP</td>
+<td align="right">2</td>
+</tr>
+<tr class="odd">
+<td align="right">2</td>
+<td align="left">Melbourne</td>
+<td align="left">LNP</td>
+<td align="right">1</td>
+</tr>
+<tr class="even">
+<td align="right">2</td>
+<td align="left">Melbourne</td>
+<td align="left">Other</td>
+<td align="right">3</td>
+</tr>
+<tr class="odd">
+<td align="right">3</td>
+<td align="left">Melbourne</td>
+<td align="left">ALP</td>
+<td align="right">3</td>
+</tr>
+<tr class="even">
+<td align="right">3</td>
+<td align="left">Melbourne</td>
+<td align="left">LNP</td>
+<td align="right">2</td>
+</tr>
+<tr class="odd">
+<td align="right">3</td>
+<td align="left">Melbourne</td>
+<td align="left">Other</td>
+<td align="right">1</td>
+</tr>
+<tr class="even">
+<td align="right">4</td>
+<td align="left">Melbourne</td>
+<td align="left">ALP</td>
+<td align="right">1</td>
+</tr>
+<tr class="odd">
+<td align="right">4</td>
+<td align="left">Melbourne</td>
+<td align="left">LNP</td>
+<td align="right">3</td>
+</tr>
+<tr class="even">
+<td align="right">4</td>
+<td align="left">Melbourne</td>
+<td align="left">Other</td>
+<td align="right">2</td>
+</tr>
+<tr class="odd">
+<td align="right">5</td>
+<td align="left">Melbourne</td>
+<td align="left">ALP</td>
+<td align="right">2</td>
+</tr>
+<tr class="even">
+<td align="right">5</td>
+<td align="left">Melbourne</td>
+<td align="left">LNP</td>
+<td align="right">3</td>
+</tr>
+<tr class="odd">
+<td align="right">5</td>
+<td align="left">Melbourne</td>
+<td align="left">Other</td>
+<td align="right">1</td>
+</tr>
+</tbody>
+</table>
+<div class="sourceCode" id="cb4"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" tabindex="-1"></a><span class="co"># Convert to PrefLib format</span></span>
+<span id="cb4-2"><a href="#cb4-2" tabindex="-1"></a>preflib_long <span class="ot">&lt;-</span> prefio<span class="sc">::</span><span class="fu">long_preferences</span>(</span>
+<span id="cb4-3"><a href="#cb4-3" tabindex="-1"></a>  ballot_long,</span>
+<span id="cb4-4"><a href="#cb4-4" tabindex="-1"></a>  vote,</span>
+<span id="cb4-5"><a href="#cb4-5" tabindex="-1"></a>  <span class="at">id_cols =</span> <span class="fu">c</span>(ballot_id, elect_division),</span>
+<span id="cb4-6"><a href="#cb4-6" tabindex="-1"></a>  <span class="at">item_col =</span> party,</span>
+<span id="cb4-7"><a href="#cb4-7" tabindex="-1"></a>  <span class="at">rank_col =</span> preference_rank</span>
+<span id="cb4-8"><a href="#cb4-8" tabindex="-1"></a>)</span>
+<span id="cb4-9"><a href="#cb4-9" tabindex="-1"></a></span>
+<span id="cb4-10"><a href="#cb4-10" tabindex="-1"></a><span class="co"># Convert to ternable-friendly format</span></span>
+<span id="cb4-11"><a href="#cb4-11" tabindex="-1"></a><span class="fu">dop_irv</span>(preflib_long<span class="sc">$</span>vote, <span class="at">value_type =</span> <span class="st">&quot;percentage&quot;</span>)</span>
+<span id="cb4-12"><a href="#cb4-12" tabindex="-1"></a><span class="co">#&gt; # A tibble: 2 × 5</span></span>
+<span id="cb4-13"><a href="#cb4-13" tabindex="-1"></a><span class="co">#&gt;   round   ALP   LNP Other winner</span></span>
+<span id="cb4-14"><a href="#cb4-14" tabindex="-1"></a><span class="co">#&gt;   &lt;int&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;chr&gt; </span></span>
+<span id="cb4-15"><a href="#cb4-15" tabindex="-1"></a><span class="co">#&gt; 1     1   0.4   0.2   0.4 ALP   </span></span>
+<span id="cb4-16"><a href="#cb4-16" tabindex="-1"></a><span class="co">#&gt; 2     2   0.6   0     0.4 ALP</span></span></code></pre></div>
+<p><strong>Processing wide format</strong></p>
+<p>Consider the same example, but in wide format, with each column
+representing an item/candidate and its value representing the preference
+rank.</p>
+<table>
+<thead>
+<tr class="header">
+<th align="right">ballot_id</th>
+<th align="left">elect_division</th>
+<th align="right">ALP</th>
+<th align="right">LNP</th>
+<th align="right">Other</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="right">1</td>
+<td align="left">Melbourne</td>
+<td align="right">1</td>
+<td align="right">2</td>
+<td align="right">3</td>
+</tr>
+<tr class="even">
+<td align="right">2</td>
+<td align="left">Melbourne</td>
+<td align="right">2</td>
+<td align="right">1</td>
+<td align="right">3</td>
+</tr>
+<tr class="odd">
+<td align="right">3</td>
+<td align="left">Melbourne</td>
+<td align="right">3</td>
+<td align="right">2</td>
+<td align="right">1</td>
+</tr>
+<tr class="even">
+<td align="right">4</td>
+<td align="left">Melbourne</td>
+<td align="right">1</td>
+<td align="right">3</td>
+<td align="right">2</td>
+</tr>
+<tr class="odd">
+<td align="right">5</td>
+<td align="left">Melbourne</td>
+<td align="right">2</td>
+<td align="right">3</td>
+<td align="right">1</td>
+</tr>
+</tbody>
+</table>
+<div class="sourceCode" id="cb5"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" tabindex="-1"></a><span class="co"># Convert to PrefLib format</span></span>
+<span id="cb5-2"><a href="#cb5-2" tabindex="-1"></a>preflib_wide <span class="ot">&lt;-</span> prefio<span class="sc">::</span><span class="fu">wide_preferences</span>(ballot_wide, vote, ALP<span class="sc">:</span>Other)</span>
+<span id="cb5-3"><a href="#cb5-3" tabindex="-1"></a></span>
+<span id="cb5-4"><a href="#cb5-4" tabindex="-1"></a><span class="co"># Convert to ternable-friendly format</span></span>
+<span id="cb5-5"><a href="#cb5-5" tabindex="-1"></a><span class="fu">dop_irv</span>(preflib_wide<span class="sc">$</span>vote, <span class="at">value_type =</span> <span class="st">&quot;percentage&quot;</span>)</span>
+<span id="cb5-6"><a href="#cb5-6" tabindex="-1"></a><span class="co">#&gt; # A tibble: 2 × 5</span></span>
+<span id="cb5-7"><a href="#cb5-7" tabindex="-1"></a><span class="co">#&gt;   round   ALP   LNP Other winner</span></span>
+<span id="cb5-8"><a href="#cb5-8" tabindex="-1"></a><span class="co">#&gt;   &lt;int&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;chr&gt; </span></span>
+<span id="cb5-9"><a href="#cb5-9" tabindex="-1"></a><span class="co">#&gt; 1     1   0.4   0.2   0.4 ALP   </span></span>
+<span id="cb5-10"><a href="#cb5-10" tabindex="-1"></a><span class="co">#&gt; 2     2   0.6   0     0.4 ALP</span></span></code></pre></div>
+</div>
+<div id="aec-distribution-of-preferences" class="section level1">
+<h1>AEC distribution of preferences</h1>
+<p>This section applies specifically to the <a href="https://results.aec.gov.au/31496/Website/Downloads/HouseDopByDivisionDownload-31496.csv">AEC
+distribution of preferences</a> data. However, it can also be adapted to
+datasets of similar format, where</p>
+<ul>
+<li>Each row represents an aggregated preference count and/or percentage
+for a specific candidate in a specific group/electorate.</li>
+<li>There must be at least a primary key column that uniquely identifies
+each row, a value column representing the preference count/percentage,
+and an item column representing the items/parties.</li>
+<li>There may also be a column representing the electoral status of the
+item/party (elected or not elected). This is optional.</li>
+</ul>
+<p>In this example, we will work with 2025 Distribution of Preference
+data, which is included in this package as <code>aecdop_2025</code>. We
+are interested in preference percentages of 4 main parties: Labor, The
+Coalition, Greens, and Independents. The rest is grouped into Other.</p>
+<p>Before transforming the data, let’s do some data wrangling to filter
+for relevant information.</p>
+<div class="sourceCode" id="cb6"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" tabindex="-1"></a><span class="co"># only include preference percentage and parties of interest</span></span>
+<span id="cb6-2"><a href="#cb6-2" tabindex="-1"></a></span>
+<span id="cb6-3"><a href="#cb6-3" tabindex="-1"></a>aecdop_2025 <span class="ot">&lt;-</span> aecdop_2025 <span class="sc">|&gt;</span> </span>
+<span id="cb6-4"><a href="#cb6-4" tabindex="-1"></a>  <span class="fu">filter</span>(CalculationType <span class="sc">==</span> <span class="st">&quot;Preference Percent&quot;</span>) <span class="sc">|&gt;</span></span>
+<span id="cb6-5"><a href="#cb6-5" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">Party =</span> <span class="fu">case_when</span>(</span>
+<span id="cb6-6"><a href="#cb6-6" tabindex="-1"></a>    <span class="co"># all parties not in the main parties are grouped into &quot;Other&quot;</span></span>
+<span id="cb6-7"><a href="#cb6-7" tabindex="-1"></a>    <span class="sc">!</span>(PartyAb <span class="sc">%in%</span> <span class="fu">c</span>(<span class="st">&quot;LP&quot;</span>, <span class="st">&quot;ALP&quot;</span>, <span class="st">&quot;NP&quot;</span>, <span class="st">&quot;LNP&quot;</span>, <span class="st">&quot;LNQ&quot;</span>, <span class="st">&quot;GRN&quot;</span>, <span class="st">&quot;IND&quot;</span>)) <span class="sc">~</span> <span class="st">&quot;Other&quot;</span>, </span>
+<span id="cb6-8"><a href="#cb6-8" tabindex="-1"></a>    <span class="co"># group all parties in the Coalition into &quot;LNP&quot;</span></span>
+<span id="cb6-9"><a href="#cb6-9" tabindex="-1"></a>    PartyAb <span class="sc">%in%</span> <span class="fu">c</span>(<span class="st">&quot;LP&quot;</span>, <span class="st">&quot;NP&quot;</span>, <span class="st">&quot;LNP&quot;</span>, <span class="st">&quot;LNQ&quot;</span>) <span class="sc">~</span> <span class="st">&quot;LNP&quot;</span>,</span>
+<span id="cb6-10"><a href="#cb6-10" tabindex="-1"></a>    <span class="cn">TRUE</span> <span class="sc">~</span> PartyAb</span>
+<span id="cb6-11"><a href="#cb6-11" tabindex="-1"></a>  ))</span></code></pre></div>
+<p>The data is now ready for transformation, with the following
+characteristics:</p>
+<ul>
+<li><code>DivisionNm</code> and <code>CountNumber</code> columns
+together form the primary key that uniquely identifies each row.</li>
+<li><code>CalculationValue</code> column contains the preference
+percentage.</li>
+<li><code>Party</code> column contains the item/party.</li>
+<li><code>Elected</code> column contains the elected/electoral status of
+the party.</li>
+</ul>
+<p>We will use the <code>dop_transform()</code> function to transform
+the data into a <code>ternable</code>-friendly format.</p>
+<div class="sourceCode" id="cb7"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" tabindex="-1"></a><span class="fu">dop_transform</span>(</span>
+<span id="cb7-2"><a href="#cb7-2" tabindex="-1"></a>  <span class="at">data =</span> aecdop_2025,</span>
+<span id="cb7-3"><a href="#cb7-3" tabindex="-1"></a>  <span class="at">key_cols =</span> <span class="fu">c</span>(DivisionNm, CountNumber),</span>
+<span id="cb7-4"><a href="#cb7-4" tabindex="-1"></a>  <span class="at">value_col =</span> CalculationValue,</span>
+<span id="cb7-5"><a href="#cb7-5" tabindex="-1"></a>  <span class="at">item_col =</span> Party,</span>
+<span id="cb7-6"><a href="#cb7-6" tabindex="-1"></a>  <span class="at">winner_col =</span> Elected,</span>
+<span id="cb7-7"><a href="#cb7-7" tabindex="-1"></a>  <span class="at">winner_identifier =</span> <span class="st">&quot;Y&quot;</span></span>
+<span id="cb7-8"><a href="#cb7-8" tabindex="-1"></a>)</span>
+<span id="cb7-9"><a href="#cb7-9" tabindex="-1"></a><span class="co">#&gt; # A tibble: 976 × 8</span></span>
+<span id="cb7-10"><a href="#cb7-10" tabindex="-1"></a><span class="co">#&gt;    DivisionNm CountNumber   ALP   GRN   LNP  Other    IND Winner</span></span>
+<span id="cb7-11"><a href="#cb7-11" tabindex="-1"></a><span class="co">#&gt;    &lt;chr&gt;            &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt;  &lt;dbl&gt;  &lt;dbl&gt; &lt;chr&gt; </span></span>
+<span id="cb7-12"><a href="#cb7-12" tabindex="-1"></a><span class="co">#&gt;  1 Adelaide             0 0.465 0.190 0.242 0.104  0      ALP   </span></span>
+<span id="cb7-13"><a href="#cb7-13" tabindex="-1"></a><span class="co">#&gt;  2 Adelaide             1 0.467 0.194 0.242 0.0967 0      ALP   </span></span>
+<span id="cb7-14"><a href="#cb7-14" tabindex="-1"></a><span class="co">#&gt;  3 Adelaide             2 0.476 0.205 0.244 0.0745 0      ALP   </span></span>
+<span id="cb7-15"><a href="#cb7-15" tabindex="-1"></a><span class="co">#&gt;  4 Adelaide             3 0.483 0.210 0.249 0.0578 0      ALP   </span></span>
+<span id="cb7-16"><a href="#cb7-16" tabindex="-1"></a><span class="co">#&gt;  5 Adelaide             4 0.493 0.222 0.285 0      0      ALP   </span></span>
+<span id="cb7-17"><a href="#cb7-17" tabindex="-1"></a><span class="co">#&gt;  6 Adelaide             5 0.691 0     0.309 0      0      ALP   </span></span>
+<span id="cb7-18"><a href="#cb7-18" tabindex="-1"></a><span class="co">#&gt;  7 Aston                0 0.373 0     0.377 0.209  0.0414 ALP   </span></span>
+<span id="cb7-19"><a href="#cb7-19" tabindex="-1"></a><span class="co">#&gt;  8 Aston                1 0.373 0     0.378 0.206  0.0434 ALP   </span></span>
+<span id="cb7-20"><a href="#cb7-20" tabindex="-1"></a><span class="co">#&gt;  9 Aston                2 0.376 0     0.380 0.210  0.0338 ALP   </span></span>
+<span id="cb7-21"><a href="#cb7-21" tabindex="-1"></a><span class="co">#&gt; 10 Aston                3 0.378 0     0.384 0.202  0.0358 ALP   </span></span>
+<span id="cb7-22"><a href="#cb7-22" tabindex="-1"></a><span class="co">#&gt; # ℹ 966 more rows</span></span></code></pre></div>
+</div>
+
+
+
+<!-- code folding -->
+
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>

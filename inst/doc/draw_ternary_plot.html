@@ -1,0 +1,586 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+
+<meta charset="utf-8" />
+<meta name="generator" content="pandoc" />
+<meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
+
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+
+
+
+<title>Using ternable object to draw ternary plots</title>
+
+<script>// Pandoc 2.9 adds attributes on both header and div. We remove the former (to
+// be compatible with the behavior of Pandoc < 2.8).
+document.addEventListener('DOMContentLoaded', function(e) {
+  var hs = document.querySelectorAll("div.section[class*='level'] > :first-child");
+  var i, h, a;
+  for (i = 0; i < hs.length; i++) {
+    h = hs[i];
+    if (!/^h[1-6]$/i.test(h.tagName)) continue;  // it should be a header h1-h6
+    a = h.attributes;
+    while (a.length > 0) h.removeAttribute(a[0].name);
+  }
+});
+</script>
+
+<style type="text/css">
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+span.underline{text-decoration: underline;}
+div.column{display: inline-block; vertical-align: top; width: 50%;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+</style>
+
+
+
+<style type="text/css">
+code {
+white-space: pre;
+}
+.sourceCode {
+overflow: visible;
+}
+</style>
+<style type="text/css" data-origin="pandoc">
+html { -webkit-text-size-adjust: 100%; }
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+{ counter-reset: source-line 0; }
+pre.numberSource code > span
+{ position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+{ content: counter(source-line);
+position: relative; left: -1em; text-align: right; vertical-align: baseline;
+border: none; display: inline-block;
+-webkit-touch-callout: none; -webkit-user-select: none;
+-khtml-user-select: none; -moz-user-select: none;
+-ms-user-select: none; user-select: none;
+padding: 0 4px; width: 4em;
+color: #aaaaaa;
+}
+pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa; padding-left: 4px; }
+div.sourceCode
+{ }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+code span.al { color: #ff0000; font-weight: bold; } 
+code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } 
+code span.at { color: #7d9029; } 
+code span.bn { color: #40a070; } 
+code span.bu { color: #008000; } 
+code span.cf { color: #007020; font-weight: bold; } 
+code span.ch { color: #4070a0; } 
+code span.cn { color: #880000; } 
+code span.co { color: #60a0b0; font-style: italic; } 
+code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } 
+code span.do { color: #ba2121; font-style: italic; } 
+code span.dt { color: #902000; } 
+code span.dv { color: #40a070; } 
+code span.er { color: #ff0000; font-weight: bold; } 
+code span.ex { } 
+code span.fl { color: #40a070; } 
+code span.fu { color: #06287e; } 
+code span.im { color: #008000; font-weight: bold; } 
+code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } 
+code span.kw { color: #007020; font-weight: bold; } 
+code span.op { color: #666666; } 
+code span.ot { color: #007020; } 
+code span.pp { color: #bc7a00; } 
+code span.sc { color: #4070a0; } 
+code span.ss { color: #bb6688; } 
+code span.st { color: #4070a0; } 
+code span.va { color: #19177c; } 
+code span.vs { color: #4070a0; } 
+code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } 
+</style>
+<script>
+// apply pandoc div.sourceCode style to pre.sourceCode instead
+(function() {
+  var sheets = document.styleSheets;
+  for (var i = 0; i < sheets.length; i++) {
+    if (sheets[i].ownerNode.dataset["origin"] !== "pandoc") continue;
+    try { var rules = sheets[i].cssRules; } catch (e) { continue; }
+    var j = 0;
+    while (j < rules.length) {
+      var rule = rules[j];
+      // check if there is a div.sourceCode rule
+      if (rule.type !== rule.STYLE_RULE || rule.selectorText !== "div.sourceCode") {
+        j++;
+        continue;
+      }
+      var style = rule.style.cssText;
+      // check if color or background-color is set
+      if (rule.style.color === '' && rule.style.backgroundColor === '') {
+        j++;
+        continue;
+      }
+      // replace div.sourceCode by a pre.sourceCode rule
+      sheets[i].deleteRule(j);
+      sheets[i].insertRule('pre.sourceCode{' + style + '}', j);
+    }
+  }
+})();
+</script>
+
+
+
+
+<style type="text/css">body {
+background-color: #fff;
+margin: 1em auto;
+max-width: 700px;
+overflow: visible;
+padding-left: 2em;
+padding-right: 2em;
+font-family: "Open Sans", "Helvetica Neue", Helvetica, Arial, sans-serif;
+font-size: 14px;
+line-height: 1.35;
+}
+#TOC {
+clear: both;
+margin: 0 0 10px 10px;
+padding: 4px;
+width: 400px;
+border: 1px solid #CCCCCC;
+border-radius: 5px;
+background-color: #f6f6f6;
+font-size: 13px;
+line-height: 1.3;
+}
+#TOC .toctitle {
+font-weight: bold;
+font-size: 15px;
+margin-left: 5px;
+}
+#TOC ul {
+padding-left: 40px;
+margin-left: -1.5em;
+margin-top: 5px;
+margin-bottom: 5px;
+}
+#TOC ul ul {
+margin-left: -2em;
+}
+#TOC li {
+line-height: 16px;
+}
+table {
+margin: 1em auto;
+border-width: 1px;
+border-color: #DDDDDD;
+border-style: outset;
+border-collapse: collapse;
+}
+table th {
+border-width: 2px;
+padding: 5px;
+border-style: inset;
+}
+table td {
+border-width: 1px;
+border-style: inset;
+line-height: 18px;
+padding: 5px 5px;
+}
+table, table th, table td {
+border-left-style: none;
+border-right-style: none;
+}
+table thead, table tr.even {
+background-color: #f7f7f7;
+}
+p {
+margin: 0.5em 0;
+}
+blockquote {
+background-color: #f6f6f6;
+padding: 0.25em 0.75em;
+}
+hr {
+border-style: solid;
+border: none;
+border-top: 1px solid #777;
+margin: 28px 0;
+}
+dl {
+margin-left: 0;
+}
+dl dd {
+margin-bottom: 13px;
+margin-left: 13px;
+}
+dl dt {
+font-weight: bold;
+}
+ul {
+margin-top: 0;
+}
+ul li {
+list-style: circle outside;
+}
+ul ul {
+margin-bottom: 0;
+}
+pre, code {
+background-color: #f7f7f7;
+border-radius: 3px;
+color: #333;
+white-space: pre-wrap; 
+}
+pre {
+border-radius: 3px;
+margin: 5px 0px 10px 0px;
+padding: 10px;
+}
+pre:not([class]) {
+background-color: #f7f7f7;
+}
+code {
+font-family: Consolas, Monaco, 'Courier New', monospace;
+font-size: 85%;
+}
+p > code, li > code {
+padding: 2px 0px;
+}
+div.figure {
+text-align: center;
+}
+img {
+background-color: #FFFFFF;
+padding: 2px;
+border: 1px solid #DDDDDD;
+border-radius: 3px;
+border: 1px solid #CCCCCC;
+margin: 0 5px;
+}
+h1 {
+margin-top: 0;
+font-size: 35px;
+line-height: 40px;
+}
+h2 {
+border-bottom: 4px solid #f7f7f7;
+padding-top: 10px;
+padding-bottom: 2px;
+font-size: 145%;
+}
+h3 {
+border-bottom: 2px solid #f7f7f7;
+padding-top: 10px;
+font-size: 120%;
+}
+h4 {
+border-bottom: 1px solid #f7f7f7;
+margin-left: 8px;
+font-size: 105%;
+}
+h5, h6 {
+border-bottom: 1px solid #ccc;
+font-size: 105%;
+}
+a {
+color: #0033dd;
+text-decoration: none;
+}
+a:hover {
+color: #6666ff; }
+a:visited {
+color: #800080; }
+a:visited:hover {
+color: #BB00BB; }
+a[href^="http:"] {
+text-decoration: underline; }
+a[href^="https:"] {
+text-decoration: underline; }
+
+code > span.kw { color: #555; font-weight: bold; } 
+code > span.dt { color: #902000; } 
+code > span.dv { color: #40a070; } 
+code > span.bn { color: #d14; } 
+code > span.fl { color: #d14; } 
+code > span.ch { color: #d14; } 
+code > span.st { color: #d14; } 
+code > span.co { color: #888888; font-style: italic; } 
+code > span.ot { color: #007020; } 
+code > span.al { color: #ff0000; font-weight: bold; } 
+code > span.fu { color: #900; font-weight: bold; } 
+code > span.er { color: #a61717; background-color: #e3d2d2; } 
+</style>
+
+
+
+
+</head>
+
+<body>
+
+
+
+
+<h1 class="title toc-ignore">Using <code>ternable</code> object to draw
+ternary plots</h1>
+
+
+
+<p>This vignette shows you how to build a ternary plot on 2 and higher
+dimensions, using the <code>ternable</code> object.</p>
+<p>Both 2D and high-dimensional (HD) ternary plots require the following
+3 components:</p>
+<ul>
+<li>Coordinates of the observations: Your n-part compositional data must
+be transformed into (n-1)-dimensional space via Helmert matrix.</li>
+<li>Vertices: The point coordinates that define the vertices of the
+simplex</li>
+<li>Edges: How the vertices are connected to create the simplex</li>
+</ul>
+<p>You can access all these components conveniently via a
+<code>ternable</code> object.</p>
+<div id="ternable-object" class="section level1">
+<h1><code>ternable</code> object</h1>
+<p><code>ternable</code> is a simple S3 object that contains all the
+data and metadata useful for ternary plots, including the following
+components:</p>
+<ul>
+<li><code>data</code>: Stores input data after being validated and
+normalized</li>
+<li><code>data_coord</code>: Stores the coordinates for all
+observations.</li>
+<li><code>data_edges</code>: Stores the connections between the
+observations. Useful when you want to create paths between
+observations.</li>
+<li><code>simplex_vertices</code>: Stores the simplex vertices’
+coordinates.</li>
+<li><code>simplex_edges</code>: Stores the connections between the
+simplex vertices.</li>
+<li><code>vertex_labels</code>: Stores the vertex labels/item names in
+the order provided in the argument <code>items</code>.</li>
+</ul>
+<p>To create a <code>ternable</code> object, simply call the function
+<code>as_ternable()</code>. <code>as_ternable()</code> takes 2
+arguments:</p>
+<ul>
+<li><code>data</code>: The input data, which must be in a
+<code>ternable</code>-friendly format. For more details on how to
+transform your raw data into a <code>ternable</code>-friendly format,
+please refer to <code>vignette(&quot;transform_raw_data&quot;)</code></li>
+<li><code>items</code>: The item names in the order you want them to
+appear in the ternary plot. The default takes all the columns in
+<code>data</code>.</li>
+</ul>
+<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" tabindex="-1"></a>aecdop22_transformed <span class="ot">&lt;-</span> prefviz<span class="sc">::</span>aecdop22_transformed <span class="sc">|&gt;</span> </span>
+<span id="cb1-2"><a href="#cb1-2" tabindex="-1"></a>  <span class="fu">filter</span>(CountNumber <span class="sc">==</span> <span class="dv">0</span>)</span>
+<span id="cb1-3"><a href="#cb1-3" tabindex="-1"></a><span class="fu">head</span>(aecdop22_transformed)</span>
+<span id="cb1-4"><a href="#cb1-4" tabindex="-1"></a><span class="co">#&gt; # A tibble: 6 × 6</span></span>
+<span id="cb1-5"><a href="#cb1-5" tabindex="-1"></a><span class="co">#&gt;   DivisionNm CountNumber ElectedParty   ALP   LNP Other</span></span>
+<span id="cb1-6"><a href="#cb1-6" tabindex="-1"></a><span class="co">#&gt;   &lt;chr&gt;            &lt;dbl&gt; &lt;chr&gt;        &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt;</span></span>
+<span id="cb1-7"><a href="#cb1-7" tabindex="-1"></a><span class="co">#&gt; 1 Adelaide             0 ALP          0.400 0.32  0.280</span></span>
+<span id="cb1-8"><a href="#cb1-8" tabindex="-1"></a><span class="co">#&gt; 2 Aston                0 LNP          0.325 0.430 0.244</span></span>
+<span id="cb1-9"><a href="#cb1-9" tabindex="-1"></a><span class="co">#&gt; 3 Ballarat             0 ALP          0.447 0.271 0.282</span></span>
+<span id="cb1-10"><a href="#cb1-10" tabindex="-1"></a><span class="co">#&gt; 4 Banks                0 LNP          0.353 0.452 0.195</span></span>
+<span id="cb1-11"><a href="#cb1-11" tabindex="-1"></a><span class="co">#&gt; 5 Barker               0 LNP          0.209 0.556 0.235</span></span>
+<span id="cb1-12"><a href="#cb1-12" tabindex="-1"></a><span class="co">#&gt; 6 Barton               0 ALP          0.504 0.262 0.234</span></span>
+<span id="cb1-13"><a href="#cb1-13" tabindex="-1"></a></span>
+<span id="cb1-14"><a href="#cb1-14" tabindex="-1"></a>tern22 <span class="ot">&lt;-</span> <span class="fu">as_ternable</span>(<span class="at">data =</span> aecdop22_transformed, <span class="at">items =</span> ALP<span class="sc">:</span>Other)</span>
+<span id="cb1-15"><a href="#cb1-15" tabindex="-1"></a>tern22</span>
+<span id="cb1-16"><a href="#cb1-16" tabindex="-1"></a><span class="co">#&gt; Ternable object</span></span>
+<span id="cb1-17"><a href="#cb1-17" tabindex="-1"></a><span class="co">#&gt; ----------------</span></span>
+<span id="cb1-18"><a href="#cb1-18" tabindex="-1"></a><span class="co">#&gt; Items: ALP, LNP, Other </span></span>
+<span id="cb1-19"><a href="#cb1-19" tabindex="-1"></a><span class="co">#&gt; Vertices: 3 </span></span>
+<span id="cb1-20"><a href="#cb1-20" tabindex="-1"></a><span class="co">#&gt; Edges: 6</span></span></code></pre></div>
+<div id="ternable-helpers---get_tern_" class="section level2">
+<h2><code>ternable</code> helpers - <code>get_tern_*()</code></h2>
+<p>While <code>ternable</code> provides you with the essenstial
+components for building a ternary plot, different plot types (2D or HD)
+might require slightly different way of representing these commponents.
+<code>get_tern_*()</code> functions help you do just that.</p>
+<p>Under the hood, <code>get_tern_*()</code> perform simple data
+transformations, i.e., <code>rbind()</code> and <code>cbind()</code>, to
+help you create the input that are compatible with popular plotting
+packages, i.e., <code>ggplot2</code> for 2D ternary plot and
+<code>tourr</code> for HD ternary plots.</p>
+<p>There are 3 <code>get_tern_*()</code> functions:</p>
+<ul>
+<li><code>get_tern_data()</code>: Provides input data for
+<code>ggplot2</code> or <code>tourr</code>.</li>
+<li><code>get_tern_edges()</code>: Provides edges of the simplex, which
+is required by <code>tourr</code>.</li>
+<li><code>get_tern_labels()</code>: Provides labels for the vertices,
+which is helpful for distinguishing vertices in <code>tourr</code>.</li>
+</ul>
+</div>
+</div>
+<div id="drawing-a-2d-ternary-plot" class="section level1">
+<h1>Drawing a 2D ternary plot</h1>
+<p>Take the example of the 2022 Australian Federal Election, we would
+like to take a look at the first preference distribution between the 2
+major parties: Labor and the Coalition, and other parties.</p>
+<p>The dataset <code>aecdop22_transformed</code> is already in a
+<code>ternable</code>-friendly format, so we can directly pass it to
+<code>as_ternable()</code> to create a <code>ternable</code> object.</p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" tabindex="-1"></a>tern22 <span class="ot">&lt;-</span> <span class="fu">as_ternable</span>(aecdop22_transformed, ALP<span class="sc">:</span>Other)</span></code></pre></div>
+<p>Now we can use the <code>get_tern_data()</code> function to get the
+input data for <code>ggplot2</code>.</p>
+<div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" tabindex="-1"></a>input_df <span class="ot">&lt;-</span> <span class="fu">get_tern_data</span>(tern22, <span class="at">plot_type =</span> <span class="st">&quot;2D&quot;</span>)</span>
+<span id="cb3-2"><a href="#cb3-2" tabindex="-1"></a><span class="fu">head</span>(input_df)</span>
+<span id="cb3-3"><a href="#cb3-3" tabindex="-1"></a><span class="co">#&gt;   DivisionNm CountNumber ElectedParty    ALP    LNP  Other          x1</span></span>
+<span id="cb3-4"><a href="#cb3-4" tabindex="-1"></a><span class="co">#&gt; 1   Adelaide           0          ALP 0.3998 0.3200 0.2802  0.05642712</span></span>
+<span id="cb3-5"><a href="#cb3-5" tabindex="-1"></a><span class="co">#&gt; 2      Aston           0          LNP 0.3255 0.4305 0.2440 -0.07424621</span></span>
+<span id="cb3-6"><a href="#cb3-6" tabindex="-1"></a><span class="co">#&gt; 3   Ballarat           0          ALP 0.4474 0.2709 0.2817  0.12480435</span></span>
+<span id="cb3-7"><a href="#cb3-7" tabindex="-1"></a><span class="co">#&gt; 4      Banks           0          LNP 0.3526 0.4522 0.1952 -0.07042784</span></span>
+<span id="cb3-8"><a href="#cb3-8" tabindex="-1"></a><span class="co">#&gt; 5     Barker           0          LNP 0.2085 0.5563 0.2352 -0.24593174</span></span>
+<span id="cb3-9"><a href="#cb3-9" tabindex="-1"></a><span class="co">#&gt; 6     Barton           0          ALP 0.5043 0.2619 0.2338  0.17140268</span></span>
+<span id="cb3-10"><a href="#cb3-10" tabindex="-1"></a><span class="co">#&gt;            x2</span></span>
+<span id="cb3-11"><a href="#cb3-11" tabindex="-1"></a><span class="co">#&gt; 1 -0.06507478</span></span>
+<span id="cb3-12"><a href="#cb3-12" tabindex="-1"></a><span class="co">#&gt; 2 -0.10941054</span></span>
+<span id="cb3-13"><a href="#cb3-13" tabindex="-1"></a><span class="co">#&gt; 3 -0.06323766</span></span>
+<span id="cb3-14"><a href="#cb3-14" tabindex="-1"></a><span class="co">#&gt; 4 -0.16917809</span></span>
+<span id="cb3-15"><a href="#cb3-15" tabindex="-1"></a><span class="co">#&gt; 5 -0.12018830</span></span>
+<span id="cb3-16"><a href="#cb3-16" tabindex="-1"></a><span class="co">#&gt; 6 -0.12190294</span></span></code></pre></div>
+<p>The output is a data frame where the original columns are combined
+with the coordinates (<code>x1</code>, <code>x2</code>). These
+coordinate columns are the observation locations on the plot. We can now
+use <code>ggplot2</code> to draw the ternary plot.</p>
+<div class="sourceCode" id="cb4"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" tabindex="-1"></a>p <span class="ot">&lt;-</span> <span class="fu">ggplot</span>(input_df, <span class="fu">aes</span>(<span class="at">x =</span> x1, <span class="at">y =</span> x2)) <span class="sc">+</span></span>
+<span id="cb4-2"><a href="#cb4-2" tabindex="-1"></a>  <span class="co"># Draw the ternary space as an equilateral triangle</span></span>
+<span id="cb4-3"><a href="#cb4-3" tabindex="-1"></a>  <span class="fu">add_ternary_base</span>() <span class="sc">+</span> </span>
+<span id="cb4-4"><a href="#cb4-4" tabindex="-1"></a>  <span class="co"># Plot the observations as points</span></span>
+<span id="cb4-5"><a href="#cb4-5" tabindex="-1"></a>  <span class="fu">geom_point</span>(<span class="fu">aes</span>(<span class="at">color =</span> ElectedParty)) <span class="sc">+</span> </span>
+<span id="cb4-6"><a href="#cb4-6" tabindex="-1"></a>  <span class="co"># Add vertex labels, taken from the ternable object</span></span>
+<span id="cb4-7"><a href="#cb4-7" tabindex="-1"></a>  <span class="fu">add_vertex_labels</span>(tern22<span class="sc">$</span>simplex_vertices) <span class="sc">+</span> </span>
+<span id="cb4-8"><a href="#cb4-8" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">title =</span> <span class="st">&quot;First preference in 2022 Australian Federal election&quot;</span>)</span>
+<span id="cb4-9"><a href="#cb4-9" tabindex="-1"></a></span>
+<span id="cb4-10"><a href="#cb4-10" tabindex="-1"></a>p</span></code></pre></div>
+<p><img role="img" src="data:image/png;base64,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" /><!-- --></p>
+<p>In an election, we would be interested in defining the regions where
+one party takes the majority over others. We can do that using
+<code>geom_ternary_region()</code>.</p>
+<p>This geom takes the barycentric coordinates of a reference point as
+input, and divides the ternary triangle into 3 regions based on the
+reference points. These regions are defined by the perpendicular
+projections of the reference point to the three edges of the triangle.
+The default reference point is the centroid, which divides the triangle
+into 3 equal regions.</p>
+<div class="sourceCode" id="cb5"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" tabindex="-1"></a>p <span class="sc">+</span> </span>
+<span id="cb5-2"><a href="#cb5-2" tabindex="-1"></a>  <span class="fu">geom_ternary_region</span>(</span>
+<span id="cb5-3"><a href="#cb5-3" tabindex="-1"></a>    <span class="at">x1 =</span> <span class="dv">1</span><span class="sc">/</span><span class="dv">3</span>, <span class="at">x2 =</span> <span class="dv">1</span><span class="sc">/</span><span class="dv">3</span>, <span class="at">x3 =</span> <span class="dv">1</span><span class="sc">/</span><span class="dv">3</span>, <span class="co"># Default reference points. Must sum to 1</span></span>
+<span id="cb5-4"><a href="#cb5-4" tabindex="-1"></a>    <span class="at">vertex_labels =</span> tern22<span class="sc">$</span>vertex_labels, <span class="co"># Labels for the regions</span></span>
+<span id="cb5-5"><a href="#cb5-5" tabindex="-1"></a>    <span class="fu">aes</span>(<span class="at">fill =</span> <span class="fu">after_stat</span>(vertex_labels)), </span>
+<span id="cb5-6"><a href="#cb5-6" tabindex="-1"></a>    <span class="at">alpha =</span> <span class="fl">0.3</span>, <span class="at">color =</span> <span class="cn">NA</span>, <span class="at">show.legend =</span> <span class="cn">FALSE</span></span>
+<span id="cb5-7"><a href="#cb5-7" tabindex="-1"></a>  ) <span class="sc">+</span></span>
+<span id="cb5-8"><a href="#cb5-8" tabindex="-1"></a>  <span class="fu">scale_fill_manual</span>(</span>
+<span id="cb5-9"><a href="#cb5-9" tabindex="-1"></a>    <span class="at">values =</span> <span class="fu">c</span>(<span class="st">&quot;ALP&quot;</span> <span class="ot">=</span> <span class="st">&quot;red&quot;</span>, <span class="st">&quot;LNP&quot;</span> <span class="ot">=</span> <span class="st">&quot;blue&quot;</span>, <span class="st">&quot;Other&quot;</span> <span class="ot">=</span> <span class="st">&quot;grey70&quot;</span>),</span>
+<span id="cb5-10"><a href="#cb5-10" tabindex="-1"></a>    <span class="at">aesthetics =</span> <span class="fu">c</span>(<span class="st">&quot;fill&quot;</span>, <span class="st">&quot;colour&quot;</span>)</span>
+<span id="cb5-11"><a href="#cb5-11" tabindex="-1"></a>  )</span></code></pre></div>
+<p><img role="img" src="data:image/png;base64,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" /><!-- --></p>
+<p><code>vertex_labels</code> argument is used to specify the vertex of
+which the region belongs to. This is helpful when you want to “sync” the
+aesthetic mapping of <code>geom_ternary_region()</code> with the base
+layer because you only need to specify the customization once.</p>
+<p>Please note that the order in which the labels are provided must
+match the order of the vertices in the ternary plot. The vertices are
+listed clockwise, from the right (ALP) to the left (LNP), then ending at
+the top of the triangle (Other). The best way is to get these labels
+from <code>ternable$vertex_labels</code> as <code>ternable</code>
+preserves the vertex orders.</p>
+</div>
+<div id="drawing-a-high-dimensional-ternary-plot" class="section level1">
+<h1>Drawing a high-dimensional ternary plot</h1>
+<p>Take the example of the 2025 Australian Federal Election, we would
+like to take a look at the first preference distribution between the 4
+major groups: Labor, Coalition, Greens, Independents and the other
+party. This can be conveniently done using the <code>tourr</code>
+package, <code>ternable</code> object and the <code>get_tern_*()</code>
+functions.</p>
+<p>A ternary tour requires the following components:</p>
+<ul>
+<li>Coordinates of the observations and vertices</li>
+<li>Edges of the simplex</li>
+<li>Vertex labels (good to have to identify the vertices during the
+tour)</li>
+</ul>
+<div class="sourceCode" id="cb6"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" tabindex="-1"></a><span class="co"># Load the data</span></span>
+<span id="cb6-2"><a href="#cb6-2" tabindex="-1"></a>aecdop25_transformed <span class="ot">&lt;-</span> prefviz<span class="sc">::</span>aecdop25_transformed <span class="sc">|&gt;</span> </span>
+<span id="cb6-3"><a href="#cb6-3" tabindex="-1"></a>  <span class="fu">filter</span>(CountNumber <span class="sc">==</span> <span class="dv">0</span>)</span>
+<span id="cb6-4"><a href="#cb6-4" tabindex="-1"></a><span class="fu">head</span>(aecdop25_transformed)</span>
+<span id="cb6-5"><a href="#cb6-5" tabindex="-1"></a><span class="co">#&gt; # A tibble: 6 × 8</span></span>
+<span id="cb6-6"><a href="#cb6-6" tabindex="-1"></a><span class="co">#&gt;   DivisionNm CountNumber ElectedParty   ALP    GRN   LNP Other    IND</span></span>
+<span id="cb6-7"><a href="#cb6-7" tabindex="-1"></a><span class="co">#&gt;   &lt;chr&gt;            &lt;dbl&gt; &lt;chr&gt;        &lt;dbl&gt;  &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt;  &lt;dbl&gt;</span></span>
+<span id="cb6-8"><a href="#cb6-8" tabindex="-1"></a><span class="co">#&gt; 1 Adelaide             0 ALP          0.465 0.190  0.242 0.104 0     </span></span>
+<span id="cb6-9"><a href="#cb6-9" tabindex="-1"></a><span class="co">#&gt; 2 Aston                0 ALP          0.373 0      0.377 0.209 0.0414</span></span>
+<span id="cb6-10"><a href="#cb6-10" tabindex="-1"></a><span class="co">#&gt; 3 Ballarat             0 ALP          0.424 0      0.286 0.262 0.0281</span></span>
+<span id="cb6-11"><a href="#cb6-11" tabindex="-1"></a><span class="co">#&gt; 4 Banks                0 ALP          0.364 0.119  0.391 0.106 0.0202</span></span>
+<span id="cb6-12"><a href="#cb6-12" tabindex="-1"></a><span class="co">#&gt; 5 Barker               0 LNP          0.225 0.0816 0.5   0.135 0.0586</span></span>
+<span id="cb6-13"><a href="#cb6-13" tabindex="-1"></a><span class="co">#&gt; 6 Barton               0 ALP          0.471 0.159  0.242 0.128 0</span></span>
+<span id="cb6-14"><a href="#cb6-14" tabindex="-1"></a></span>
+<span id="cb6-15"><a href="#cb6-15" tabindex="-1"></a>tern25 <span class="ot">&lt;-</span> <span class="fu">as_ternable</span>(aecdop25_transformed, ALP<span class="sc">:</span>IND)</span>
+<span id="cb6-16"><a href="#cb6-16" tabindex="-1"></a></span>
+<span id="cb6-17"><a href="#cb6-17" tabindex="-1"></a><span class="co"># Animate the tour</span></span>
+<span id="cb6-18"><a href="#cb6-18" tabindex="-1"></a><span class="fu">animate_xy</span>(</span>
+<span id="cb6-19"><a href="#cb6-19" tabindex="-1"></a>  <span class="fu">get_tern_data</span>(tern25, <span class="at">plot_type =</span> <span class="st">&quot;HD&quot;</span>), <span class="co"># Dataframe with coordinates of the observations and vertices</span></span>
+<span id="cb6-20"><a href="#cb6-20" tabindex="-1"></a>  <span class="at">edges =</span> <span class="fu">get_tern_edges</span>(tern25), <span class="co"># Edges of the simplex</span></span>
+<span id="cb6-21"><a href="#cb6-21" tabindex="-1"></a>  <span class="at">obs_labels  =</span> <span class="fu">get_tern_labels</span>(tern25), <span class="co"># Labels for the vertices</span></span>
+<span id="cb6-22"><a href="#cb6-22" tabindex="-1"></a>  <span class="at">axes =</span> <span class="st">&quot;bottomleft&quot;</span></span>
+<span id="cb6-23"><a href="#cb6-23" tabindex="-1"></a>)</span></code></pre></div>
+<p><img role="img" src="data:image/png;base64,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" /><!-- --><img role="img" src="data:image/png;base64,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" /><!-- --></p>
+<p>We can add colors to the points.</p>
+<div class="sourceCode" id="cb7"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" tabindex="-1"></a><span class="co"># Define color mapping</span></span>
+<span id="cb7-2"><a href="#cb7-2" tabindex="-1"></a>party_colors <span class="ot">&lt;-</span> <span class="fu">c</span>(</span>
+<span id="cb7-3"><a href="#cb7-3" tabindex="-1"></a>  <span class="st">&quot;ALP&quot;</span> <span class="ot">=</span> <span class="st">&quot;#E13940&quot;</span>,    <span class="co"># Red</span></span>
+<span id="cb7-4"><a href="#cb7-4" tabindex="-1"></a>  <span class="st">&quot;LNP&quot;</span> <span class="ot">=</span> <span class="st">&quot;#1C4F9C&quot;</span>,    <span class="co"># Blue</span></span>
+<span id="cb7-5"><a href="#cb7-5" tabindex="-1"></a>  <span class="st">&quot;GRN&quot;</span> <span class="ot">=</span> <span class="st">&quot;#10C25B&quot;</span>,    <span class="co"># Green</span></span>
+<span id="cb7-6"><a href="#cb7-6" tabindex="-1"></a>  <span class="st">&quot;IND&quot;</span> <span class="ot">=</span> <span class="st">&quot;#F39C12&quot;</span>,    <span class="co"># Orange</span></span>
+<span id="cb7-7"><a href="#cb7-7" tabindex="-1"></a>  <span class="st">&quot;Other&quot;</span> <span class="ot">=</span> <span class="st">&quot;#95A5A6&quot;</span>   <span class="co"># Gray</span></span>
+<span id="cb7-8"><a href="#cb7-8" tabindex="-1"></a>)</span>
+<span id="cb7-9"><a href="#cb7-9" tabindex="-1"></a></span>
+<span id="cb7-10"><a href="#cb7-10" tabindex="-1"></a><span class="co"># Map to your data (assuming your column is called elected_party)</span></span>
+<span id="cb7-11"><a href="#cb7-11" tabindex="-1"></a>color_vector <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="fu">rep</span>(<span class="st">&quot;black&quot;</span>, <span class="dv">5</span>),</span>
+<span id="cb7-12"><a href="#cb7-12" tabindex="-1"></a>  party_colors[aecdop25_transformed<span class="sc">$</span>ElectedParty])</span>
+<span id="cb7-13"><a href="#cb7-13" tabindex="-1"></a></span>
+<span id="cb7-14"><a href="#cb7-14" tabindex="-1"></a><span class="co"># Animate the tour</span></span>
+<span id="cb7-15"><a href="#cb7-15" tabindex="-1"></a><span class="fu">animate_xy</span>(</span>
+<span id="cb7-16"><a href="#cb7-16" tabindex="-1"></a>  <span class="fu">get_tern_data</span>(tern25, <span class="at">plot_type =</span> <span class="st">&quot;HD&quot;</span>), </span>
+<span id="cb7-17"><a href="#cb7-17" tabindex="-1"></a>  <span class="at">edges =</span> <span class="fu">get_tern_edges</span>(tern25),</span>
+<span id="cb7-18"><a href="#cb7-18" tabindex="-1"></a>  <span class="at">obs_labels  =</span> <span class="fu">get_tern_labels</span>(tern25),</span>
+<span id="cb7-19"><a href="#cb7-19" tabindex="-1"></a>  <span class="at">col =</span> color_vector,</span>
+<span id="cb7-20"><a href="#cb7-20" tabindex="-1"></a>  <span class="at">axes =</span> <span class="st">&quot;bottomleft&quot;</span></span>
+<span id="cb7-21"><a href="#cb7-21" tabindex="-1"></a>)</span></code></pre></div>
+<p><img role="img" src="data:image/png;base64,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" /><!-- --><img role="img" src="data:image/png;base64,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" /><!-- --></p>
+</div>
+
+
+
+<!-- code folding -->
+
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>

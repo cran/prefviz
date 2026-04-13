@@ -1,0 +1,483 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+
+<meta charset="utf-8" />
+<meta name="generator" content="pandoc" />
+<meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
+
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+
+
+
+<title>Adding ordered path to your ternary plot</title>
+
+<script>// Pandoc 2.9 adds attributes on both header and div. We remove the former (to
+// be compatible with the behavior of Pandoc < 2.8).
+document.addEventListener('DOMContentLoaded', function(e) {
+  var hs = document.querySelectorAll("div.section[class*='level'] > :first-child");
+  var i, h, a;
+  for (i = 0; i < hs.length; i++) {
+    h = hs[i];
+    if (!/^h[1-6]$/i.test(h.tagName)) continue;  // it should be a header h1-h6
+    a = h.attributes;
+    while (a.length > 0) h.removeAttribute(a[0].name);
+  }
+});
+</script>
+
+<style type="text/css">
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+span.underline{text-decoration: underline;}
+div.column{display: inline-block; vertical-align: top; width: 50%;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+</style>
+
+
+
+<style type="text/css">
+code {
+white-space: pre;
+}
+.sourceCode {
+overflow: visible;
+}
+</style>
+<style type="text/css" data-origin="pandoc">
+html { -webkit-text-size-adjust: 100%; }
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+{ counter-reset: source-line 0; }
+pre.numberSource code > span
+{ position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+{ content: counter(source-line);
+position: relative; left: -1em; text-align: right; vertical-align: baseline;
+border: none; display: inline-block;
+-webkit-touch-callout: none; -webkit-user-select: none;
+-khtml-user-select: none; -moz-user-select: none;
+-ms-user-select: none; user-select: none;
+padding: 0 4px; width: 4em;
+color: #aaaaaa;
+}
+pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa; padding-left: 4px; }
+div.sourceCode
+{ }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+code span.al { color: #ff0000; font-weight: bold; } 
+code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } 
+code span.at { color: #7d9029; } 
+code span.bn { color: #40a070; } 
+code span.bu { color: #008000; } 
+code span.cf { color: #007020; font-weight: bold; } 
+code span.ch { color: #4070a0; } 
+code span.cn { color: #880000; } 
+code span.co { color: #60a0b0; font-style: italic; } 
+code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } 
+code span.do { color: #ba2121; font-style: italic; } 
+code span.dt { color: #902000; } 
+code span.dv { color: #40a070; } 
+code span.er { color: #ff0000; font-weight: bold; } 
+code span.ex { } 
+code span.fl { color: #40a070; } 
+code span.fu { color: #06287e; } 
+code span.im { color: #008000; font-weight: bold; } 
+code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } 
+code span.kw { color: #007020; font-weight: bold; } 
+code span.op { color: #666666; } 
+code span.ot { color: #007020; } 
+code span.pp { color: #bc7a00; } 
+code span.sc { color: #4070a0; } 
+code span.ss { color: #bb6688; } 
+code span.st { color: #4070a0; } 
+code span.va { color: #19177c; } 
+code span.vs { color: #4070a0; } 
+code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } 
+</style>
+<script>
+// apply pandoc div.sourceCode style to pre.sourceCode instead
+(function() {
+  var sheets = document.styleSheets;
+  for (var i = 0; i < sheets.length; i++) {
+    if (sheets[i].ownerNode.dataset["origin"] !== "pandoc") continue;
+    try { var rules = sheets[i].cssRules; } catch (e) { continue; }
+    var j = 0;
+    while (j < rules.length) {
+      var rule = rules[j];
+      // check if there is a div.sourceCode rule
+      if (rule.type !== rule.STYLE_RULE || rule.selectorText !== "div.sourceCode") {
+        j++;
+        continue;
+      }
+      var style = rule.style.cssText;
+      // check if color or background-color is set
+      if (rule.style.color === '' && rule.style.backgroundColor === '') {
+        j++;
+        continue;
+      }
+      // replace div.sourceCode by a pre.sourceCode rule
+      sheets[i].deleteRule(j);
+      sheets[i].insertRule('pre.sourceCode{' + style + '}', j);
+    }
+  }
+})();
+</script>
+
+
+
+
+<style type="text/css">body {
+background-color: #fff;
+margin: 1em auto;
+max-width: 700px;
+overflow: visible;
+padding-left: 2em;
+padding-right: 2em;
+font-family: "Open Sans", "Helvetica Neue", Helvetica, Arial, sans-serif;
+font-size: 14px;
+line-height: 1.35;
+}
+#TOC {
+clear: both;
+margin: 0 0 10px 10px;
+padding: 4px;
+width: 400px;
+border: 1px solid #CCCCCC;
+border-radius: 5px;
+background-color: #f6f6f6;
+font-size: 13px;
+line-height: 1.3;
+}
+#TOC .toctitle {
+font-weight: bold;
+font-size: 15px;
+margin-left: 5px;
+}
+#TOC ul {
+padding-left: 40px;
+margin-left: -1.5em;
+margin-top: 5px;
+margin-bottom: 5px;
+}
+#TOC ul ul {
+margin-left: -2em;
+}
+#TOC li {
+line-height: 16px;
+}
+table {
+margin: 1em auto;
+border-width: 1px;
+border-color: #DDDDDD;
+border-style: outset;
+border-collapse: collapse;
+}
+table th {
+border-width: 2px;
+padding: 5px;
+border-style: inset;
+}
+table td {
+border-width: 1px;
+border-style: inset;
+line-height: 18px;
+padding: 5px 5px;
+}
+table, table th, table td {
+border-left-style: none;
+border-right-style: none;
+}
+table thead, table tr.even {
+background-color: #f7f7f7;
+}
+p {
+margin: 0.5em 0;
+}
+blockquote {
+background-color: #f6f6f6;
+padding: 0.25em 0.75em;
+}
+hr {
+border-style: solid;
+border: none;
+border-top: 1px solid #777;
+margin: 28px 0;
+}
+dl {
+margin-left: 0;
+}
+dl dd {
+margin-bottom: 13px;
+margin-left: 13px;
+}
+dl dt {
+font-weight: bold;
+}
+ul {
+margin-top: 0;
+}
+ul li {
+list-style: circle outside;
+}
+ul ul {
+margin-bottom: 0;
+}
+pre, code {
+background-color: #f7f7f7;
+border-radius: 3px;
+color: #333;
+white-space: pre-wrap; 
+}
+pre {
+border-radius: 3px;
+margin: 5px 0px 10px 0px;
+padding: 10px;
+}
+pre:not([class]) {
+background-color: #f7f7f7;
+}
+code {
+font-family: Consolas, Monaco, 'Courier New', monospace;
+font-size: 85%;
+}
+p > code, li > code {
+padding: 2px 0px;
+}
+div.figure {
+text-align: center;
+}
+img {
+background-color: #FFFFFF;
+padding: 2px;
+border: 1px solid #DDDDDD;
+border-radius: 3px;
+border: 1px solid #CCCCCC;
+margin: 0 5px;
+}
+h1 {
+margin-top: 0;
+font-size: 35px;
+line-height: 40px;
+}
+h2 {
+border-bottom: 4px solid #f7f7f7;
+padding-top: 10px;
+padding-bottom: 2px;
+font-size: 145%;
+}
+h3 {
+border-bottom: 2px solid #f7f7f7;
+padding-top: 10px;
+font-size: 120%;
+}
+h4 {
+border-bottom: 1px solid #f7f7f7;
+margin-left: 8px;
+font-size: 105%;
+}
+h5, h6 {
+border-bottom: 1px solid #ccc;
+font-size: 105%;
+}
+a {
+color: #0033dd;
+text-decoration: none;
+}
+a:hover {
+color: #6666ff; }
+a:visited {
+color: #800080; }
+a:visited:hover {
+color: #BB00BB; }
+a[href^="http:"] {
+text-decoration: underline; }
+a[href^="https:"] {
+text-decoration: underline; }
+
+code > span.kw { color: #555; font-weight: bold; } 
+code > span.dt { color: #902000; } 
+code > span.dv { color: #40a070; } 
+code > span.bn { color: #d14; } 
+code > span.fl { color: #d14; } 
+code > span.ch { color: #d14; } 
+code > span.st { color: #d14; } 
+code > span.co { color: #888888; font-style: italic; } 
+code > span.ot { color: #007020; } 
+code > span.al { color: #ff0000; font-weight: bold; } 
+code > span.fu { color: #900; font-weight: bold; } 
+code > span.er { color: #a61717; background-color: #e3d2d2; } 
+</style>
+
+
+
+
+</head>
+
+<body>
+
+
+
+
+<h1 class="title toc-ignore">Adding ordered path to your ternary
+plot</h1>
+
+
+
+<p>Adding paths between points in a ternary space can help illustrate
+transitions or sequences in the data.</p>
+<p>In the example of instant-runoff voting in Australian Federal
+Election, these paths can be used to illustrate the change in preference
+distribution between rounds of voting in one electorate. This vignette
+shows how to add paths to both 2D and high-dimensional ternary
+plots.</p>
+<div id="d-ternary-plot" class="section level1">
+<h1>2D ternary plot</h1>
+<p>Take the example of the 2022 Australian Federal Election, we would
+like to take a look at the changes in preference distribution across
+rounds in three electorates: Higgins, Monash, and Melbourne.</p>
+<p>Input data is already in a <code>ternable</code>-friendly format,
+with each row representing the preference distribution in one round of
+voting in one electorate.</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" tabindex="-1"></a>input_df <span class="ot">&lt;-</span> prefviz<span class="sc">::</span>aecdop22_transformed <span class="sc">|&gt;</span> </span>
+<span id="cb1-2"><a href="#cb1-2" tabindex="-1"></a>   <span class="fu">filter</span>(DivisionNm <span class="sc">%in%</span> <span class="fu">c</span>(<span class="st">&quot;Higgins&quot;</span>, <span class="st">&quot;Monash&quot;</span>, <span class="st">&quot;Melbourne&quot;</span>))</span>
+<span id="cb1-3"><a href="#cb1-3" tabindex="-1"></a><span class="fu">head</span>(input_df)</span>
+<span id="cb1-4"><a href="#cb1-4" tabindex="-1"></a><span class="co">#&gt; # A tibble: 6 × 6</span></span>
+<span id="cb1-5"><a href="#cb1-5" tabindex="-1"></a><span class="co">#&gt;   DivisionNm CountNumber ElectedParty   ALP   LNP Other</span></span>
+<span id="cb1-6"><a href="#cb1-6" tabindex="-1"></a><span class="co">#&gt;   &lt;chr&gt;            &lt;dbl&gt; &lt;chr&gt;        &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt;</span></span>
+<span id="cb1-7"><a href="#cb1-7" tabindex="-1"></a><span class="co">#&gt; 1 Higgins              0 ALP          0.285 0.407 0.309</span></span>
+<span id="cb1-8"><a href="#cb1-8" tabindex="-1"></a><span class="co">#&gt; 2 Higgins              1 ALP          0.285 0.407 0.307</span></span>
+<span id="cb1-9"><a href="#cb1-9" tabindex="-1"></a><span class="co">#&gt; 3 Higgins              2 ALP          0.288 0.409 0.303</span></span>
+<span id="cb1-10"><a href="#cb1-10" tabindex="-1"></a><span class="co">#&gt; 4 Higgins              3 ALP          0.292 0.411 0.297</span></span>
+<span id="cb1-11"><a href="#cb1-11" tabindex="-1"></a><span class="co">#&gt; 5 Higgins              4 ALP          0.294 0.416 0.290</span></span>
+<span id="cb1-12"><a href="#cb1-12" tabindex="-1"></a><span class="co">#&gt; 6 Higgins              5 ALP          0.300 0.448 0.252</span></span>
+<span id="cb1-13"><a href="#cb1-13" tabindex="-1"></a></span>
+<span id="cb1-14"><a href="#cb1-14" tabindex="-1"></a><span class="co"># Create ternable object</span></span>
+<span id="cb1-15"><a href="#cb1-15" tabindex="-1"></a>tern22 <span class="ot">&lt;-</span> <span class="fu">as_ternable</span>(input_df, ALP<span class="sc">:</span>Other)</span></code></pre></div>
+<p>For 2D ternary plots, adding ordered paths is straightforward using
+the <code>stat_ordered_path()</code> function, and providing the
+<code>order_by</code> aesthetic. This is equivalent to
+<code>geom_path()</code> when you pre-order your data points in the
+order you want them to be connected.</p>
+<p>In this case, we want to connect the points in the order of round
+(<code>order_by = CountNumber</code>) for each electorate
+(<code>group = DivisionNm</code>).</p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" tabindex="-1"></a><span class="co"># The base plot</span></span>
+<span id="cb2-2"><a href="#cb2-2" tabindex="-1"></a>p <span class="ot">&lt;-</span> <span class="fu">get_tern_data</span>(tern22, <span class="at">plot_type =</span> <span class="st">&quot;2D&quot;</span>) <span class="sc">|&gt;</span> </span>
+<span id="cb2-3"><a href="#cb2-3" tabindex="-1"></a>  <span class="fu">ggplot</span>(<span class="fu">aes</span>(<span class="at">x =</span> x1, <span class="at">y =</span> x2)) <span class="sc">+</span></span>
+<span id="cb2-4"><a href="#cb2-4" tabindex="-1"></a>  <span class="fu">add_ternary_base</span>() <span class="sc">+</span></span>
+<span id="cb2-5"><a href="#cb2-5" tabindex="-1"></a>  <span class="fu">geom_ternary_region</span>(</span>
+<span id="cb2-6"><a href="#cb2-6" tabindex="-1"></a>    <span class="fu">aes</span>(<span class="at">fill =</span> <span class="fu">after_stat</span>(vertex_labels)),</span>
+<span id="cb2-7"><a href="#cb2-7" tabindex="-1"></a>    <span class="at">vertex_labels =</span> tern22<span class="sc">$</span>vertex_labels,</span>
+<span id="cb2-8"><a href="#cb2-8" tabindex="-1"></a>    <span class="at">alpha =</span> <span class="fl">0.3</span>, <span class="at">color =</span> <span class="st">&quot;grey50&quot;</span>,</span>
+<span id="cb2-9"><a href="#cb2-9" tabindex="-1"></a>    <span class="at">show.legend =</span> <span class="cn">FALSE</span></span>
+<span id="cb2-10"><a href="#cb2-10" tabindex="-1"></a>  ) <span class="sc">+</span></span>
+<span id="cb2-11"><a href="#cb2-11" tabindex="-1"></a>  <span class="fu">geom_point</span>(<span class="fu">aes</span>(<span class="at">color =</span> ElectedParty)) <span class="sc">+</span></span>
+<span id="cb2-12"><a href="#cb2-12" tabindex="-1"></a>  <span class="fu">add_vertex_labels</span>(tern22<span class="sc">$</span>simplex_vertices) <span class="sc">+</span></span>
+<span id="cb2-13"><a href="#cb2-13" tabindex="-1"></a>  <span class="fu">scale_color_manual</span>(</span>
+<span id="cb2-14"><a href="#cb2-14" tabindex="-1"></a>    <span class="at">values =</span> <span class="fu">c</span>(<span class="st">&quot;ALP&quot;</span> <span class="ot">=</span> <span class="st">&quot;red&quot;</span>, <span class="st">&quot;LNP&quot;</span> <span class="ot">=</span> <span class="st">&quot;blue&quot;</span>, <span class="st">&quot;Other&quot;</span> <span class="ot">=</span> <span class="st">&quot;grey70&quot;</span>),</span>
+<span id="cb2-15"><a href="#cb2-15" tabindex="-1"></a>    <span class="at">aesthetics =</span> <span class="fu">c</span>(<span class="st">&quot;fill&quot;</span>, <span class="st">&quot;colour&quot;</span>)</span>
+<span id="cb2-16"><a href="#cb2-16" tabindex="-1"></a>  )</span>
+<span id="cb2-17"><a href="#cb2-17" tabindex="-1"></a></span>
+<span id="cb2-18"><a href="#cb2-18" tabindex="-1"></a><span class="co"># Add ordered paths</span></span>
+<span id="cb2-19"><a href="#cb2-19" tabindex="-1"></a>p <span class="sc">+</span> <span class="fu">stat_ordered_path</span>(</span>
+<span id="cb2-20"><a href="#cb2-20" tabindex="-1"></a>  <span class="fu">aes</span>(<span class="at">group =</span> DivisionNm, <span class="at">order_by =</span> CountNumber, <span class="at">color =</span> ElectedParty), </span>
+<span id="cb2-21"><a href="#cb2-21" tabindex="-1"></a>  <span class="at">size =</span> <span class="fl">0.5</span></span>
+<span id="cb2-22"><a href="#cb2-22" tabindex="-1"></a>)</span></code></pre></div>
+<p><img role="img" src="data:image/png;base64,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" /><!-- --></p>
+<p>It’s interesting to see such a close win of ALP in Higgins (red line)
+since the result only flipped in the last round. Meanwhile, wins in
+Monash and Melbourne were consistent with first preference.</p>
+</div>
+<div id="high-dimensional-ternary-plot" class="section level1">
+<h1>High-dimensional ternary plot</h1>
+<p>Let’s take a look at Monash and Melbourne in 2025 election, but this
+time we will use a high-dimensional ternary plot with 5 parties: ALP,
+LNP, GRN, IND, and Other.</p>
+<p>Unlike 2D ternary plots, we need to group and order the data before
+plotting by providing the <code>group</code> and <code>order_by</code>
+arguments when creating ternable object. Since this data is already
+ordered by round in the input data frame, we just need to provide the
+grouping variable (<code>DivisionNm</code>).</p>
+<div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" tabindex="-1"></a>input_df2 <span class="ot">&lt;-</span> prefviz<span class="sc">::</span>aecdop25_transformed <span class="sc">|&gt;</span></span>
+<span id="cb3-2"><a href="#cb3-2" tabindex="-1"></a>  <span class="fu">filter</span>(DivisionNm <span class="sc">%in%</span> <span class="fu">c</span>(<span class="st">&quot;Monash&quot;</span>, <span class="st">&quot;Melbourne&quot;</span>))</span>
+<span id="cb3-3"><a href="#cb3-3" tabindex="-1"></a><span class="fu">head</span>(input_df2)</span>
+<span id="cb3-4"><a href="#cb3-4" tabindex="-1"></a><span class="co">#&gt; # A tibble: 6 × 8</span></span>
+<span id="cb3-5"><a href="#cb3-5" tabindex="-1"></a><span class="co">#&gt;   DivisionNm CountNumber ElectedParty   ALP   GRN   LNP Other    IND</span></span>
+<span id="cb3-6"><a href="#cb3-6" tabindex="-1"></a><span class="co">#&gt;   &lt;chr&gt;            &lt;dbl&gt; &lt;chr&gt;        &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt;  &lt;dbl&gt;</span></span>
+<span id="cb3-7"><a href="#cb3-7" tabindex="-1"></a><span class="co">#&gt; 1 Melbourne            0 ALP          0.313     0 0.198 0.439 0.0495</span></span>
+<span id="cb3-8"><a href="#cb3-8" tabindex="-1"></a><span class="co">#&gt; 2 Melbourne            1 ALP          0.316     0 0.199 0.444 0.0408</span></span>
+<span id="cb3-9"><a href="#cb3-9" tabindex="-1"></a><span class="co">#&gt; 3 Melbourne            2 ALP          0.321     0 0.201 0.434 0.0444</span></span>
+<span id="cb3-10"><a href="#cb3-10" tabindex="-1"></a><span class="co">#&gt; 4 Melbourne            3 ALP          0.326     0 0.212 0.408 0.0538</span></span>
+<span id="cb3-11"><a href="#cb3-11" tabindex="-1"></a><span class="co">#&gt; 5 Melbourne            4 ALP          0.343     0 0.236 0.421 0     </span></span>
+<span id="cb3-12"><a href="#cb3-12" tabindex="-1"></a><span class="co">#&gt; 6 Melbourne            5 ALP          0.530     0 0     0.470 0</span></span>
+<span id="cb3-13"><a href="#cb3-13" tabindex="-1"></a></span>
+<span id="cb3-14"><a href="#cb3-14" tabindex="-1"></a><span class="co"># Create ternable object</span></span>
+<span id="cb3-15"><a href="#cb3-15" tabindex="-1"></a>tern25 <span class="ot">&lt;-</span> <span class="fu">as_ternable</span>(input_df2, ALP<span class="sc">:</span>IND, <span class="at">group =</span> DivisionNm)</span></code></pre></div>
+<p>Adding paths in a high-dimensional ternary plot is made possible by
+the <code>edges</code> arguments in <code>display_xy()</code>.
+Therefore, besides simplex edges, we need to provide the data edges to
+the <code>edges</code> argument. This can be done by setting
+<code>include_data = TRUE</code> in <code>get_tern_edges()</code>.</p>
+<div class="sourceCode" id="cb4"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" tabindex="-1"></a><span class="co"># Add colors</span></span>
+<span id="cb4-2"><a href="#cb4-2" tabindex="-1"></a>party_colors <span class="ot">&lt;-</span> <span class="fu">c</span>(</span>
+<span id="cb4-3"><a href="#cb4-3" tabindex="-1"></a>  <span class="st">&quot;ALP&quot;</span> <span class="ot">=</span> <span class="st">&quot;#E13940&quot;</span>,    <span class="co"># Red</span></span>
+<span id="cb4-4"><a href="#cb4-4" tabindex="-1"></a>  <span class="st">&quot;LNP&quot;</span> <span class="ot">=</span> <span class="st">&quot;#1C4F9C&quot;</span>,    <span class="co"># Blue</span></span>
+<span id="cb4-5"><a href="#cb4-5" tabindex="-1"></a>  <span class="st">&quot;GRN&quot;</span> <span class="ot">=</span> <span class="st">&quot;#10C25B&quot;</span>,    <span class="co"># Green</span></span>
+<span id="cb4-6"><a href="#cb4-6" tabindex="-1"></a>  <span class="st">&quot;IND&quot;</span> <span class="ot">=</span> <span class="st">&quot;#F39C12&quot;</span>,    <span class="co"># Orange</span></span>
+<span id="cb4-7"><a href="#cb4-7" tabindex="-1"></a>  <span class="st">&quot;Other&quot;</span> <span class="ot">=</span> <span class="st">&quot;#95A5A6&quot;</span>   <span class="co"># Gray</span></span>
+<span id="cb4-8"><a href="#cb4-8" tabindex="-1"></a>)</span>
+<span id="cb4-9"><a href="#cb4-9" tabindex="-1"></a></span>
+<span id="cb4-10"><a href="#cb4-10" tabindex="-1"></a>color_vector <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="fu">rep</span>(<span class="st">&quot;black&quot;</span>, <span class="dv">5</span>),</span>
+<span id="cb4-11"><a href="#cb4-11" tabindex="-1"></a>  party_colors[input_df2<span class="sc">$</span>ElectedParty])</span>
+<span id="cb4-12"><a href="#cb4-12" tabindex="-1"></a></span>
+<span id="cb4-13"><a href="#cb4-13" tabindex="-1"></a>edges_color <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="fu">rep</span>(<span class="st">&quot;black&quot;</span>, <span class="fu">nrow</span>(tern25<span class="sc">$</span>simplex_edges)),</span>
+<span id="cb4-14"><a href="#cb4-14" tabindex="-1"></a>  party_colors[input_df2<span class="sc">$</span>ElectedParty])</span>
+<span id="cb4-15"><a href="#cb4-15" tabindex="-1"></a></span>
+<span id="cb4-16"><a href="#cb4-16" tabindex="-1"></a><span class="co"># Animate the tour</span></span>
+<span id="cb4-17"><a href="#cb4-17" tabindex="-1"></a><span class="fu">animate_xy</span>(</span>
+<span id="cb4-18"><a href="#cb4-18" tabindex="-1"></a>  <span class="fu">get_tern_data</span>(tern25, <span class="at">plot_type =</span> <span class="st">&quot;HD&quot;</span>), </span>
+<span id="cb4-19"><a href="#cb4-19" tabindex="-1"></a>  <span class="at">col =</span> color_vector,</span>
+<span id="cb4-20"><a href="#cb4-20" tabindex="-1"></a>  <span class="at">edges =</span> <span class="fu">get_tern_edges</span>(tern25, <span class="at">include_data =</span> <span class="cn">TRUE</span>),</span>
+<span id="cb4-21"><a href="#cb4-21" tabindex="-1"></a>  <span class="at">edges.col =</span> edges_color,</span>
+<span id="cb4-22"><a href="#cb4-22" tabindex="-1"></a>  <span class="at">obs_labels  =</span> <span class="fu">get_tern_labels</span>(tern25),</span>
+<span id="cb4-23"><a href="#cb4-23" tabindex="-1"></a>  <span class="at">axes =</span> <span class="st">&quot;bottomleft&quot;</span></span>
+<span id="cb4-24"><a href="#cb4-24" tabindex="-1"></a>)</span></code></pre></div>
+<p><img role="img" src="data:image/png;base64,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" /><!-- --><img role="img" src="data:image/png;base64,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" /><!-- --></p>
+</div>
+
+
+
+<!-- code folding -->
+
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>
