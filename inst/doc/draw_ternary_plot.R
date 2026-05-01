@@ -24,7 +24,7 @@ tern22
 tern22 <- as_ternable(aecdop22_transformed, ALP:Other)
 
 ## -----------------------------------------------------------------------------
-input_df <- get_tern_data(tern22, plot_type = "2D")
+input_df <- get_tern_data2d(tern22)
 head(input_df)
 
 ## -----------------------------------------------------------------------------
@@ -61,10 +61,11 @@ head(aecdop25_transformed)
 tern25 <- as_ternable(aecdop25_transformed, ALP:IND)
 
 # Animate the tour
+tourr_data <- get_tern_datahd(tern25)
 animate_xy(
-  get_tern_data(tern25, plot_type = "HD"), # Dataframe with coordinates of the observations and vertices
+  dplyr::select(tourr_data, starts_with("x")), # Coordinates of the observations and vertices
   edges = get_tern_edges(tern25), # Edges of the simplex
-  obs_labels  = get_tern_labels(tern25), # Labels for the vertices
+  obs_labels = tourr_data[["labels"]], # Labels for the vertices
   axes = "bottomleft"
 )
 
@@ -82,11 +83,11 @@ party_colors <- c(
 color_vector <- c(rep("black", 5),
   party_colors[aecdop25_transformed$ElectedParty])
 
-# Animate the tour
+# Animate the tour (tourr_data already defined above)
 animate_xy(
-  get_tern_data(tern25, plot_type = "HD"), 
+  dplyr::select(tourr_data, starts_with("x")),
   edges = get_tern_edges(tern25),
-  obs_labels  = get_tern_labels(tern25),
+  obs_labels = tourr_data[["labels"]],
   col = color_vector,
   axes = "bottomleft"
 )
